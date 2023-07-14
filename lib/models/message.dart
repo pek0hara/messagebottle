@@ -43,8 +43,8 @@ class Message {
       senderId: json['senderId'],
       id: json['id'],
       content: json['content'],
-      isRead: json['isRead'],
-      isReplied: json['isReplied'],
+      // isRead: json['isRead'],
+      // isReplied: json['isReplied'],
       sentAt: json['sentAt'],
     );
   }
@@ -55,9 +55,14 @@ class Message {
       'senderId': senderId,
       'id': id,
       'content': content,
-      'isRead': isRead,
-      'isReplied': isReplied,
+      // 'isRead': isRead,
+      // 'isReplied': isReplied,
       'sentAt': sentAt,
     };
+  }
+
+  void updateReply(String updatedContent) {
+    content = updatedContent;
+    isReplied = true;
   }
 }

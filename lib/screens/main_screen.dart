@@ -34,18 +34,38 @@ class MainScreen extends StatelessWidget {
                 return ListView.builder(
                   itemCount: messageProvider.messageList.length,
                   itemBuilder: (context, index) {
-                    final reversedIndex = messageProvider.messageList.length - index - 1;
+                    final reversedIndex =
+                        messageProvider.messageList.length - index - 1;
+                    final message = messageProvider.messageList[reversedIndex];
                     return ListTile(
-                      title: Text(messageProvider.messageList[reversedIndex].content),
-                      subtitle:
-                          Text(messageProvider.messageList[reversedIndex].sentAt.toString()),
+                      title: Text(
+                        message.content,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(message.sentAt.toString()),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          if (!message.isRead)
+                            const Icon(
+                              Icons.mark_email_unread, // 未読のメッセージには未読アイコンを表示します
+                              color: Colors.green,
+                            ),
+                          if (message.isReplied)
+                            const Icon(
+                              Icons.reply, // 返信済みのメッセージには返信アイコンを表示します
+                              color: Colors.blue,
+                            ),
+                        ],
+                      ),
                       onTap: () {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) => ReplyScreen(
-                                    message:
-                                        messageProvider.messageList[reversedIndex])));
+                                    message: messageProvider
+                                        .messageList[reversedIndex])));
                       },
                     );
                   },
@@ -55,7 +75,6 @@ class MainScreen extends StatelessWidget {
           }
         },
       ),
-
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final TextEditingController _controller = TextEditingController();
@@ -66,7 +85,8 @@ class MainScreen extends StatelessWidget {
                 title: const Text('New Message'),
                 content: TextField(
                   controller: _controller,
-                  decoration: const InputDecoration(hintText: "Enter your message"),
+                  decoration:
+                      const InputDecoration(hintText: "Enter your message"),
                   maxLines: null, // ユーザーが新しい行を開始するたびにテキストフィールドが拡張するように設定します
                 ),
                 actions: <Widget>[

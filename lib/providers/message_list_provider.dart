@@ -6,14 +6,13 @@ import 'package:path/path.dart';
 import 'package:uuid/uuid.dart';
 import 'package:messagebottle/models/message.dart';
 
-
 class MessageListProvider with ChangeNotifier {
   List<Message> _messageList = [];
   static Database? _db;
 
   List<Message> get messageList => _messageList;
 
-    Future<List<Message>> fetchMessagesFromDb() async {
+  Future<List<Message>> fetchMessagesFromDb() async {
     if (_db == null) {
       await _initDb();
     }
@@ -51,7 +50,18 @@ class MessageListProvider with ChangeNotifier {
     notifyListeners();
   }
 
-    Future<void> sendMessage(Message message) async {
+  void updateReadStatus(Message message) {
+    message.isRead = true;
+    _db?.update(
+      'message_list',
+      message.toMap(),
+      where: 'id = ?',
+      whereArgs: [message.id],
+    );
+    notifyListeners();
+  }
+
+  Future<void> sendMessage(Message message) async {
     if (_db == null) {
       await _initDb();
     }
@@ -60,12 +70,16 @@ class MessageListProvider with ChangeNotifier {
     String messageId = uuid.v4();
     message.id = messageId;
 
-    await _db?.insert('message_list', message.toMap(),
+    await _db?.insert(
+      'message_list',
+      message.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+
+    // TODO ここにメッセージを送信する処理を書きます。
   }
 
-    Future<void> _initDb() async {
+  Future<void> _initDb() async {
     var databasesPath = await getDatabasesPath();
     String path = join(databasesPath, 'messagebottle.db');
 

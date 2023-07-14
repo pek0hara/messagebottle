@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:messagebottle/models/message.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 
 class ReplyScreen extends StatefulWidget {
   final Message message;
@@ -12,13 +14,59 @@ class ReplyScreen extends StatefulWidget {
 
 class _ReplyScreenState extends State<ReplyScreen> {
   final _formKey = GlobalKey<FormState>();
-  
-  String replyText = '';
 
-  void _sendReply(BuildContext context) {
-    // ここでHTTPリクエストを使ってサーバーに返信を送る処理を記述します。
-    // 以下はダミーのコードです。
+  String replyText = '';
+  Database? _db;
+
+  @override
+  void initState() {
+    super.initState();
+  
+  _initDb().then((_) {
+    updateReadStatus();
+  });
+  }
+
+  Future<void> _initDb() async {
+    var databasesPath = await getDatabasesPath();
+    String path = join(databasesPath, 'messagebottle.db');
+
+    _db = await openDatabase(
+      path,
+      version: 1,
+    );
+  }
+
+   void updateReadStatus() async {
+    // 既読フラグを更新します。
+    widget.message.isRead = true;
+
+    // データベースを更新します。
+    await _db?.update(
+      'message_list',
+      widget.message.toMap(),
+      where: 'id = ?',
+      whereArgs: [widget.message.id],
+    );
+  }
+
+  void _sendReply(BuildContext context) async {
+    // 更新後のメッセージ内容を作成します。
+    String updatedContent =
+        '$replyText\n----replied at ${DateTime.now()}----\n${widget.message.content}';
+    widget.message.updateReply(updatedContent);
+
+    // データベースを更新します。
+    await _db?.update(
+      'message_list',
+      widget.message.toMap(),
+      where: 'id = ?',
+      whereArgs: [widget.message.id],
+    );
+
+    // TODO ここに返信を送信する処理を書きます。
     print('Reply sent: $replyText');
+
     Navigator.of(context).pop(); // 返信後、前の画面に戻ります。
   }
 
