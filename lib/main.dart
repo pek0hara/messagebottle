@@ -6,7 +6,12 @@ import 'package:uuid/uuid.dart';
 import 'package:messagebottle/screens/main_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => MessageListProvider(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

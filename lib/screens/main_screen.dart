@@ -20,7 +20,7 @@ class MainScreen extends StatelessWidget {
       ),
       body: FutureBuilder(
         // ここでfetchMessagesメソッドを呼び出して、メッセージを取得します。
-        // future: messageProvider.fetchMessages(), // いったんコメントアウトします。
+        // future: messageProvider.fetchMessages(), // TODO いったんコメントアウトします。
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             // メッセージがまだロード中の場合、スピナーを表示します。
@@ -95,14 +95,11 @@ class MainScreen extends StatelessWidget {
                     onPressed: () {
                       // 新規メッセージの作成
                       Message newMessage = Message(
-                        id: "", // IDはsendMessage関数で設定します
-                        senderId: "user1", // ここに適切なユーザーIDを設定します
+                        messageId: "", // IDはsendMessage関数で設定します
                         content: _controller.text, // ユーザーの入力内容
-                        isRead: false, // 新規メッセージなので既読フラグはfalse
-                        isReplied: false, // 新規メッセージなので返信済みフラグはfalse
                         sentAt: DateTime.now().toString(), // 送信日時
                       );
-                      messageProvider.sendMessage(newMessage);
+                      messageProvider.sendMessage(newMessage, false);
                       Navigator.of(context).pop();
                     },
                   ),

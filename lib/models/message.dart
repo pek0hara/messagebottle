@@ -1,14 +1,14 @@
 class Message {
-  String senderId;
-  String id; // メッセージID
+  String senderId; // 送信者ID
+  String messageId; // メッセージID
   String content; // メッセージ内容
   bool isRead; // 既読フラグ
   bool isReplied; // 返信済みフラグ
   String sentAt; // 送信日時
 
   Message({
-    required this.senderId,
-    required this.id,
+    this.senderId = "",
+    required this.messageId,
     required this.content,
     this.isRead = false,
     this.isReplied = false,
@@ -18,7 +18,7 @@ class Message {
   Map<String, dynamic> toMap() {
     return {
       'senderId': senderId,
-      'id': id,
+      'messageId': messageId,
       'content': content,
       'isRead': isRead ? 1 : 0,
       'isReplied': isReplied ? 1 : 0,
@@ -29,7 +29,7 @@ class Message {
   static Message fromMap(Map<String, dynamic> map) {
     return Message(
       senderId: map['senderId'],
-      id: map['id'],
+      messageId: map['messageId'],
       content: map['content'],
       isRead: map['isRead'] == 1,
       isReplied: map['isReplied'] == 1,
@@ -37,14 +37,12 @@ class Message {
     );
   }
 
-    // ここではサーバから取得したJSONデータをモデルに変換するためのコードを記述します。
+  // ここではサーバから取得したJSONデータをモデルに変換するためのコードを記述します。
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
       senderId: json['senderId'],
-      id: json['id'],
+      messageId: json['messageId'],
       content: json['content'],
-      // isRead: json['isRead'],
-      // isReplied: json['isReplied'],
       sentAt: json['sentAt'],
     );
   }
@@ -53,10 +51,8 @@ class Message {
   Map<String, dynamic> toJson() {
     return {
       'senderId': senderId,
-      'id': id,
+      'messageId': messageId,
       'content': content,
-      // 'isRead': isRead,
-      // 'isReplied': isReplied,
       'sentAt': sentAt,
     };
   }

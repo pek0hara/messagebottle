@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:messagebottle/models/message.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:provider/provider.dart';
+import 'package:messagebottle/providers/message_list_provider.dart';
 
 class ReplyScreen extends StatefulWidget {
   final Message message;
@@ -21,10 +23,10 @@ class _ReplyScreenState extends State<ReplyScreen> {
   @override
   void initState() {
     super.initState();
-  
-  _initDb().then((_) {
-    updateReadStatus();
-  });
+
+    _initDb().then((_) {
+      updateReadStatus();
+    });
   }
 
   Future<void> _initDb() async {
@@ -37,7 +39,7 @@ class _ReplyScreenState extends State<ReplyScreen> {
     );
   }
 
-   void updateReadStatus() async {
+  void updateReadStatus() async {
     // 既読フラグを更新します。
     widget.message.isRead = true;
 
@@ -45,51 +47,24 @@ class _ReplyScreenState extends State<ReplyScreen> {
     await _db?.update(
       'message_list',
       widget.message.toMap(),
-      where: 'id = ?',
-      whereArgs: [widget.message.id],
+      where: 'messageId = ?',
+      whereArgs: [widget.message.messageId],
     );
-  }
-
-  void _sendReply(BuildContext context) async {
-    // 更新後のメッセージ内容を作成します。
-    String updatedContent =
-        '$replyText\n----replied at ${DateTime.now()}----\n${widget.message.content}';
-    widget.message.updateReply(updatedContent);
-
-    // データベースを更新します。
-    await _db?.update(
-      'message_list',
-      widget.message.toMap(),
-      where: 'id = ?',
-      whereArgs: [widget.message.id],
-    );
-
-    // TODO ここに返信を送信する処理を書きます。
-    print('Reply sent: $replyText');
-
-    Navigator.of(context).pop(); // 返信後、前の画面に戻ります。
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Reply to ${widget.message.senderId}'),
+        title: const Text('Reply'),
       ),
       body: Form(
         key: _formKey,
         child: Column(
           children: <Widget>[
-            Align(
+            const Align(
               alignment: Alignment.centerLeft,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  // 元のメッセージを表示します。
-                  const Text('Replying to:'),
-                  Text(widget.message.content),
-                ],
-              ),
+              child: Text('Reply to this message:'),
             ),
             TextFormField(
               maxLines: null,
@@ -106,7 +81,14 @@ class _ReplyScreenState extends State<ReplyScreen> {
             ElevatedButton(
               onPressed: () {
                 if (_formKey.currentState?.validate() == true) {
-                  _sendReply(context);
+                  // メッセージの内容を更新します。
+                  String updatedContent =
+                      '$replyText\n---- ${DateTime.now()} ----\n${widget.message.content}';
+                  widget.message.updateReply(updatedContent);
+                  // メッセージを送信します。
+                  Provider.of<MessageListProvider>(context, listen: false)
+                      .sendMessage(widget.message, true);
+                  Navigator.of(context).pop(); // 返信後、前の画面に戻ります。
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -114,6 +96,16 @@ class _ReplyScreenState extends State<ReplyScreen> {
                 backgroundColor: Colors.blue, // ここでボタンの背景色を指定します。
               ),
               child: const Text('Send'),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  // 元のメッセージを表示します。
+                  Text(widget.message.content),
+                ],
+              ),
             ),
           ],
         ),
