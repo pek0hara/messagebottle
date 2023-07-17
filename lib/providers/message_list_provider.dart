@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:messagebottle/models/message.dart';
+import 'package:uuid/uuid.dart';
 
 class MessageListProvider with ChangeNotifier {
   List<Message> _messageList = [];
@@ -105,6 +106,11 @@ class MessageListProvider with ChangeNotifier {
       await updateMessage(message);
     } else {
       // 返信でない場合は、メッセージを追加します。
+      // メッセージIDを生成します。
+      var uuid = const Uuid();
+      String messageId = uuid.v4();
+      message.messageId = messageId;
+
       await _db?.insert('message_list', message.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
